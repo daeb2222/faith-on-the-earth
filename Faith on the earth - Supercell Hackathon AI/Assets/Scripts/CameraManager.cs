@@ -1,86 +1,51 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class IsometricCameraController : MonoBehaviour
+public class CameraControl : MonoBehaviour
 {
-    public float moveSpeed = 10f; // Velocidad de movimiento de la cámara
-    public float zoomSpeed = 10f; // Velocidad de zoom
-    public float minZoom = 5f;    // Zoom mínimo
-    public float maxZoom = 20f;   // Zoom máximo
-    public Vector3 initialOffset = new Vector3(0, 10, -10); // Posición inicial de la cámara para la vista isométrica
+    public float rotateSpeed = 5f;
+    public float zoomSpeed = 10f;
+    public float minZoom = 10f;
+    public float maxZoom = 100f;
 
-    private Camera mainCamera;
+    public Transform startTransform;
+    public Vector2 xBounds = new Vector2(-50f, 50f); 
+    public Vector2 yBounds = new Vector2(-10f, 10f); 
 
-    // Referencias a las acciones del Input System
-    private InputAction moveAction;
-    private InputAction zoomAction;
-    private InputAction rightClickAction;
-
-    // Cargar el InputActionAsset que has creado
-    public InputActionAsset inputActionAsset;
-
-    void Awake()
-    {
-        mainCamera = Camera.main;
-
-        // Cargar las acciones de input desde el InputActionAsset
-        var actionMap = inputActionAsset.FindActionMap("Player");
-
-        // Obtener las acciones del Input System
-        moveAction = actionMap.FindAction("Navigate");
-        rightClickAction = actionMap.FindAction("RightClickMouse");
-        zoomAction = actionMap.FindAction("ScrollWheel");
-
-        // Activar las acciones
-        moveAction.Enable();
-        rightClickAction.Enable();
-        zoomAction.Enable();
-    }
+    private Vector3 lastMousePosition;
+    private Camera cam;
 
     void Start()
     {
-        // Configurar la posición inicial de la cámara
-        transform.position = initialOffset;
+        cam = Camera.main;
+
+        if (startTransform != null)
+        {
+            transform.position = startTransform.position;
+        }
+        cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minZoom, maxZoom);
     }
 
     void Update()
     {
-        // Solo mover la cámara si el botón derecho del ratón está presionado
-        if (rightClickAction.ReadValue<float>() > 0) // Si el clic derecho está presionado
+        if (Input.GetMouseButton(0))
         {
-            HandleMove();
+            Vector3 delta = Input.mousePosition - lastMousePosition;
+            transform.Rotate(Vector3.up, -delta.x * rotateSpeed * Time.deltaTime, Space.World);
+            transform.Rotate(Vector3.right, delta.y * rotateSpeed * Time.deltaTime, Space.World);
         }
 
-        HandleZoom();
-    }
+        lastMousePosition = Input.mousePosition;
 
-    private void HandleMove()
-    {
-        // Obtener la entrada de movimiento desde el ratón (delta del mouse)
-        Vector2 moveInput = moveAction.ReadValue<Vector2>(); // Lee el movimiento del ratón
-        float horizontal = moveInput.x * moveSpeed * Time.deltaTime;
-        float vertical = moveInput.y * moveSpeed * Time.deltaTime;
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        float newZoom = Mathf.Clamp(cam.fieldOfView - scroll * zoomSpeed, minZoom, maxZoom);
+        cam.fieldOfView = newZoom;
 
-        // Aplicar el movimiento de la cámara
-        transform.Translate(-horizontal, 0, -vertical, Space.World);  // Mover la cámara en el espacio global
-    }
+        float moveX = transform.position.x + Input.GetAxis("Mouse X") * rotateSpeed * Time.deltaTime;
+        float moveY = transform.position.y + Input.GetAxis("Mouse Y") * rotateSpeed * Time.deltaTime;
 
-    private void HandleZoom()
-    {
-        // Obtener el valor del scroll para el zoom
-        float zoomInput = zoomAction.ReadValue<float>();
-        float zoom = zoomInput * zoomSpeed;
+        moveX = Mathf.Clamp(moveX, xBounds.x, xBounds.y);
+        moveY = Mathf.Clamp(moveY, yBounds.x, yBounds.y);
 
-        // Calcular y aplicar el zoom
-        float newZoom = Mathf.Clamp(transform.position.y - zoom, minZoom, maxZoom);
-        transform.position = new Vector3(transform.position.x, newZoom, transform.position.z);
-    }
-
-    private void OnDisable()
-    {
-        // Desactivar las acciones cuando no se usen
-        moveAction.Disable();
-        zoomAction.Disable();
-        rightClickAction.Disable();
+        transform.position = new Vector3(moveX, moveY, transform.position.z);
     }
 }
