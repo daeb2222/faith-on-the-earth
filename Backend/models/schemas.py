@@ -66,8 +66,10 @@ class StatusRequest(BaseModel):
 class DownloadRequest(BaseModel):
     task_uuid: str
 
-
+class FileInfo(BaseModel):
+    url: str
+    name: str
+    
 class AssetResult(BaseModel):
-    status: str
-    model_url: Optional[str] = None
-    error: Optional[str] = None
+    task_uuid: str
+    files: list[FileInfo]
