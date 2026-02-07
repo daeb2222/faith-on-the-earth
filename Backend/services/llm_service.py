@@ -39,12 +39,42 @@ async def _call_mistral_api(
 def get_mock_response():
     """Fallback mock data."""
     return {
-        "narrative": "The gods are silent. A giant cat is chewing on the internet cables.",
-        "action": "Connection Lost",  # Normalized key for internal use
-        "taunt": "Try again later, human.",
-        "faith_stolen": 0,
-        "options": [],  # In case narrator needs it
-    }
+    "narrative": "The Cosmic Link to the AI Overlords has been severed. The world pauses in awkward silence as the router spirits refuse to cooperate.",
+    "options": [
+        {
+            "index": 0,
+            "type": "benevolent",
+            "desc": "Pray to the Modem Gods for reconnection.",
+            "faith_delta": 0,
+            "consequence": "You feel a faint signal, but the connection remains elusive."
+        },
+        {
+            "index": 1,
+            "type": "cruel",
+            "desc": "Smite the router with a bolt of lightning.",
+            "faith_delta": -5,
+            "consequence": "The hardware is destroyed. That did not help."
+        },
+        {
+            "index": 2,
+            "type": "greedy",
+            "desc": "Demand the villagers sacrifice their mobile data plans.",
+            "faith_delta": 5,
+            "consequence": "You gain 5GB of divine data, but the latency is terrible."
+        },
+        {
+            "index": 3,
+            "type": "lazy",
+            "desc": "Wait for the developers to fix the server.",
+            "faith_delta": 0,
+            "consequence": "Time passes. Nothing happens. A loading spinner appears."
+        }
+    ],
+    "antag_action": "The rival god glitches in and out of existence.",
+    "antag_taunt": "Error 404: Witty insult not found. Check your connection, mortal!",
+    "antag_faith_delta": 0
+}
+    
 
 
 async def generate_turn_narrative(

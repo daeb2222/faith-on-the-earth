@@ -12,6 +12,8 @@ public class DialogueButtons : MonoBehaviour
     public Button[] botones;  // Botones que quieres modificar con las opciones
     public TMP_Text narrativeText;  // Texto para mostrar la narrativa
     public TMP_Text faithText;  // Texto para mostrar la "fe"
+    public Slider faithSlider;  // Slider para mostrar el porcentaje de fe
+
     private int faith = 100;  // Valor inicial de fe
     private float absurdeFactor = 1.0f;  // Factor de lo absurdo
     private GameState gameState;  // Variable para almacenar el estado del juego
@@ -31,7 +33,7 @@ public class DialogueButtons : MonoBehaviour
             }
         };
 
-        // Llamamos al m�todo para enviar el estado del juego a la API
+        // Llamamos al método para enviar el estado del juego a la API
         StartCoroutine(SendGameStateToAPI());
     }
 
@@ -102,7 +104,7 @@ public class DialogueButtons : MonoBehaviour
         public int antag_faith_delta;
     }
 
-    // M�todo que procesa la respuesta de la API
+    // Método que procesa la respuesta de la API
     void ProcessResponse(string response)
     {
         // Deserializamos la respuesta de la API
@@ -120,7 +122,10 @@ public class DialogueButtons : MonoBehaviour
         faithText.text = "Faith: " + faith;
 
         // Mostramos los cambios en la fe
-        Debug.Log("Fe del jugador despu�s de la intervenci�n del rival: " + faith);
+        Debug.Log("Fe del jugador después de la intervención del rival: " + faith);
+
+        // Actualizamos el Slider para que reaccione al porcentaje de fe
+        UpdateFaithSlider();
 
         // Asignamos las opciones a los botones
         for (int i = 0; i < apiResponse.options.Length; i++)
@@ -132,29 +137,39 @@ public class DialogueButtons : MonoBehaviour
                 Option option = apiResponse.options[i];
 
                 // Mostramos las opciones en el log
-                Debug.Log("Opci�n recibida: " + option.desc);
-                Debug.Log("Fe modificada por esta opci�n: " + option.faith_delta);
-                Debug.Log("Consecuencia de la opci�n: " + option.consequence);
+                Debug.Log("Opción recibida: " + option.desc);
+                Debug.Log("Fe modificada por esta opción: " + option.faith_delta);
+                Debug.Log("Consecuencia de la opción: " + option.consequence);
 
                 buttonText.text = option.desc;
 
-                // Agregamos la acci�n al bot�n para manejar la opci�n seleccionada
+                // Agregamos la acción al botón para manejar la opción seleccionada
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => OnOptionSelected(option));
             }
         }
     }
 
-    // M�todo que se llama cuando el jugador selecciona una opci�n
+    // Método que actualiza el Slider con el porcentaje de fe
+    void UpdateFaithSlider()
+    {
+        // Convertimos la fe en un porcentaje para el slider (0 a 100)
+        faithSlider.value = faith; // Suponiendo que el Slider va de 0 a 100
+    }
+
+    // Método que se llama cuando el jugador selecciona una opción
     void OnOptionSelected(Option selectedOption)
     {
-        // Actualizamos la fe seg�n la opci�n seleccionada
+        // Actualizamos la fe según la opción seleccionada
         faith += selectedOption.faith_delta;
         faithText.text = "Faith: " + faith;
 
-        // Mostrar la consecuencia de la opci�n seleccionada (puedes usarla de manera creativa)
-        Debug.Log("Opci�n seleccionada: " + selectedOption.desc);
-        Debug.Log("Consecuencia de la opci�n: " + selectedOption.consequence);
-        Debug.Log("Fe despu�s de la opci�n seleccionada: " + faith);
+        // Mostrar la consecuencia de la opción seleccionada (puedes usarla de manera creativa)
+        Debug.Log("Opción seleccionada: " + selectedOption.desc);
+        Debug.Log("Consecuencia de la opción: " + selectedOption.consequence);
+        Debug.Log("Fe después de la opción seleccionada: " + faith);
+
+        // Actualizamos el Slider después de cambiar la fe
+        UpdateFaithSlider();
     }
 }
