@@ -1243,9 +1243,9 @@ MonoBehaviour:
   npcPrefab: {fileID: 6263574928815985755, guid: 5310999c9f670444f84f77c74a3372d3, type: 3}
   spawnLocations:
   - {fileID: 461016893}
+  - {fileID: 1632250097}
   - {fileID: 1360367599}
   - {fileID: 1197645763}
-  - {fileID: 1632250097}
 --- !u!114 &461016892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3476,6 +3476,7 @@ MonoBehaviour:
   narrativeText: {fileID: 803892349}
   faithText: {fileID: 629904869}
   faithSlider: {fileID: 725111292}
+  loadingPanel: {fileID: 0}
 --- !u!4 &1801569195
 Transform:
   m_ObjectHideFlags: 0
