@@ -5,6 +5,7 @@ Output ONLY valid JSON:
     "narrative":"1-2 sentence funny update on world/player actions.",
     "options":[
         {
+            "index": unique number for this option (0, 1, 2, 3),
             "type":"cruel",
             "desc":"Short snappy action (20 words max).",
             "faith_delta": number (-20 to +20),
