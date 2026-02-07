@@ -43,7 +43,7 @@ def submit_gen2(req: RodinGen2Request) -> Dict[str, Any]:
     return r.json()
 
 
-def wait_for_completion(subscription_key: str, poll_interval: float = 5.0) -> None:
+def wait_for_completion(subscription_key: str, poll_interval: float = 10.0) -> None:
     """Espera hasta que TODOS los jobs estén en Done."""
     while True:
         r = requests.post(
