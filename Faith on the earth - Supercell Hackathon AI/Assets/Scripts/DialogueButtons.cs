@@ -4,13 +4,14 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using TMPro;
 
 public class DialogueButtons : MonoBehaviour
 {
     public string apiUrl = "URL_DE_LA_API";  // URL de la API
     public Button[] botones;  // Botones que quieres modificar con las opciones
-    public Text narrativeText;  // Texto para mostrar la narrativa
-    public Text faithText;  // Texto para mostrar la "fe"
+    public TMP_Text narrativeText;  // Texto para mostrar la narrativa
+    public TMP_Text faithText;  // Texto para mostrar la "fe"
     private int faith = 100;  // Valor inicial de fe
     private float absurdeFactor = 1.0f;  // Factor de lo absurdo
     private GameState gameState;  // Variable para almacenar el estado del juego
@@ -30,7 +31,7 @@ public class DialogueButtons : MonoBehaviour
             }
         };
 
-        // Llamamos al método para enviar el estado del juego a la API
+        // Llamamos al mï¿½todo para enviar el estado del juego a la API
         StartCoroutine(SendGameStateToAPI());
     }
 
@@ -39,7 +40,7 @@ public class DialogueButtons : MonoBehaviour
         // Convertimos el GameState a JSON
         string jsonData = JsonUtility.ToJson(gameState);
 
-        Debug.Log("Enviando estado del juego a la API: " + jsonData); // Debug.Log para ver el estado enviado
+        Debug.Log("POST to: " + apiUrl);
 
         UnityWebRequest request = new UnityWebRequest(apiUrl, "POST");
         request.SetRequestHeader("Content-Type", "application/json");
@@ -50,6 +51,14 @@ public class DialogueButtons : MonoBehaviour
 
         // Esperamos la respuesta de la API
         yield return request.SendWebRequest();
+        Debug.Log("Response Code: " + request.responseCode);
+        if (request.result == UnityWebRequest.Result.ConnectionError ||
+            request.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.LogError("Network Error: " + request.error);
+            Debug.LogError("Response Code: " + request.responseCode);
+            yield break;
+        }
 
         if (request.result != UnityWebRequest.Result.Success)
         {
@@ -93,7 +102,7 @@ public class DialogueButtons : MonoBehaviour
         public int antag_faith_delta;
     }
 
-    // Método que procesa la respuesta de la API
+    // Mï¿½todo que procesa la respuesta de la API
     void ProcessResponse(string response)
     {
         // Deserializamos la respuesta de la API
@@ -111,7 +120,7 @@ public class DialogueButtons : MonoBehaviour
         faithText.text = "Faith: " + faith;
 
         // Mostramos los cambios en la fe
-        Debug.Log("Fe del jugador después de la intervención del rival: " + faith);
+        Debug.Log("Fe del jugador despuï¿½s de la intervenciï¿½n del rival: " + faith);
 
         // Asignamos las opciones a los botones
         for (int i = 0; i < apiResponse.options.Length; i++)
@@ -119,33 +128,33 @@ public class DialogueButtons : MonoBehaviour
             if (i < botones.Length)
             {
                 Button button = botones[i];
-                Text buttonText = button.GetComponentInChildren<Text>();
+                TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
                 Option option = apiResponse.options[i];
 
                 // Mostramos las opciones en el log
-                Debug.Log("Opción recibida: " + option.desc);
-                Debug.Log("Fe modificada por esta opción: " + option.faith_delta);
-                Debug.Log("Consecuencia de la opción: " + option.consequence);
+                Debug.Log("Opciï¿½n recibida: " + option.desc);
+                Debug.Log("Fe modificada por esta opciï¿½n: " + option.faith_delta);
+                Debug.Log("Consecuencia de la opciï¿½n: " + option.consequence);
 
                 buttonText.text = option.desc;
 
-                // Agregamos la acción al botón para manejar la opción seleccionada
+                // Agregamos la acciï¿½n al botï¿½n para manejar la opciï¿½n seleccionada
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => OnOptionSelected(option));
             }
         }
     }
 
-    // Método que se llama cuando el jugador selecciona una opción
+    // Mï¿½todo que se llama cuando el jugador selecciona una opciï¿½n
     void OnOptionSelected(Option selectedOption)
     {
-        // Actualizamos la fe según la opción seleccionada
+        // Actualizamos la fe segï¿½n la opciï¿½n seleccionada
         faith += selectedOption.faith_delta;
         faithText.text = "Faith: " + faith;
 
-        // Mostrar la consecuencia de la opción seleccionada (puedes usarla de manera creativa)
-        Debug.Log("Opción seleccionada: " + selectedOption.desc);
-        Debug.Log("Consecuencia de la opción: " + selectedOption.consequence);
-        Debug.Log("Fe después de la opción seleccionada: " + faith);
+        // Mostrar la consecuencia de la opciï¿½n seleccionada (puedes usarla de manera creativa)
+        Debug.Log("Opciï¿½n seleccionada: " + selectedOption.desc);
+        Debug.Log("Consecuencia de la opciï¿½n: " + selectedOption.consequence);
+        Debug.Log("Fe despuï¿½s de la opciï¿½n seleccionada: " + faith);
     }
 }
