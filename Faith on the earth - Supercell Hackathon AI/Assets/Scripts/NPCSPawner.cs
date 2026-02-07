@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class NPCSPawner : MonoBehaviour
 {
     public GameObject npcPrefab;
     public Transform[] spawnLocations;
-    private GameObject currentNPC;
+    private List<GameObject> spawnedNPCs = new List<GameObject>();
 
     public void SpawnNPC()
     {
@@ -16,17 +17,25 @@ public class NPCSPawner : MonoBehaviour
 
         Transform spawnLocation = spawnLocations[Random.Range(0, spawnLocations.Length)];
 
-        Instantiate(npcPrefab, spawnLocation.position, Quaternion.identity);
+        GameObject newNPC = Instantiate(npcPrefab, spawnLocation.position, Quaternion.identity);
+        spawnedNPCs.Add(newNPC);
         Debug.Log("NPC Spawned at: " + spawnLocation.position);
     }
 
     public void DestroyNPC()
     {
-        if (currentNPC != null)
+        if (spawnedNPCs.Count > 0)
         {
-            Destroy(currentNPC);
-            currentNPC = null;
+            GameObject npcToDestroy = spawnedNPCs[0];
+
+            spawnedNPCs.RemoveAt(0);
+            Destroy(npcToDestroy);
             Debug.Log("NPC Destroyed!");
         }
+        else
+        {
+            Debug.Log("No NPCs to destroy.");
+        }
     }
+
 }
