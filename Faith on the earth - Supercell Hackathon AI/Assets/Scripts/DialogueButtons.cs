@@ -17,6 +17,7 @@ public class DialogueButtons : MonoBehaviour
     private int faith = 100;  // Valor inicial de fe
     private float absurdeFactor = 1.0f;  // Factor de lo absurdo
     private GameState gameState;  // Variable para almacenar el estado del juego
+    private FaithCounter faithMonitor;  // Referencia al script que maneja la fe
 
     void Start()
     {
@@ -32,6 +33,9 @@ public class DialogueButtons : MonoBehaviour
                 "Turn 0: Player Action: 'You open your eyes. You are a divinity. There is a village, with small and big situations to be attended. You are curious.' -> Outcome: '' || Rival Intervention: ''"
             }
         };
+
+        // Buscamos el script FaithMonitor en la escena
+        faithMonitor = FindObjectOfType<FaithCounter>();
 
         // Llamamos al método para enviar el estado del juego a la API
         StartCoroutine(SendGameStateToAPI());
@@ -148,6 +152,12 @@ public class DialogueButtons : MonoBehaviour
                 button.onClick.AddListener(() => OnOptionSelected(option));
             }
         }
+
+        // **Actualizar la fe** en el FaithMonitor
+        if (faithMonitor != null)
+        {
+            faithMonitor.UpdateFaith(faith);  // Esto actualiza la fe en el script FaithMonitor
+        }
     }
 
     // Método que actualiza el Slider con el porcentaje de fe
@@ -171,5 +181,11 @@ public class DialogueButtons : MonoBehaviour
 
         // Actualizamos el Slider después de cambiar la fe
         UpdateFaithSlider();
+
+        // **Actualizar la fe** en el FaithMonitor
+        if (faithMonitor != null)
+        {
+            faithMonitor.UpdateFaith(faith);  // Esto actualiza la fe en el script FaithMonitor
+        }
     }
 }
