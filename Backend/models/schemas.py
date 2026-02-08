@@ -14,13 +14,13 @@ class GameState(BaseModel):
 
 
 # For Rodin API
-class RodinGen2Request(BaseModel):
+class RodinRequest(BaseModel):
     """
     Payload for generating a 3D asset via Rodin Gen-2.
     """
 
     prompt: str = Field(..., description="Text description of the object to generate.")
-
+    tier: str = Field("Sketch", description="For gen1 options: 'Sketch''Regular' 'Detailed' 'Smooth'. For gen2, only 'Gen-2' and 'Regular'is valid.")
     # Options for modification from Unity
     quality: str = Field(
         "extra-low",

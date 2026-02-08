@@ -59,7 +59,7 @@ IEnumerator SendGameStateToAPI()
 
     string jsonData = JsonUtility.ToJson(gameState);
     Debug.Log("POST to: " + apiUrl);
-
+    Debug.Log("JsonData: "+ jsonData);
     UnityWebRequest request = new UnityWebRequest(apiUrl, "POST");
     request.SetRequestHeader("Content-Type", "application/json");
 

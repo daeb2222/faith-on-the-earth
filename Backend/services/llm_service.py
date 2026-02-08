@@ -32,6 +32,8 @@ async def _call_mistral_api(
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
+        print("⚠️ Mistral API call failed. Falling back to mock response.")
+        print(f"Mistral Response: {response}")
         print(f"🔥 Mistral API Error: {e}")
         return get_mock_response()
 

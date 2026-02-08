@@ -1,7 +1,7 @@
 import time
 import requests
 from typing import Dict, Any
-from models.schemas import RodinGen2Request
+from models.schemas import RodinRequest
 from config import (
     RODIN_API_KEY,
     RODIN_API_ENDPOINT,
@@ -15,11 +15,11 @@ HEADERS = {
 }
 
 
-def build_payload(req: RodinGen2Request) -> Dict[str, Any]:
+def build_payload(req: RodinRequest) -> Dict[str, Any]:
     """Convierte el schema RodinGen2Request en el payload correcto para Gen‑2."""
     payload = {
         "prompt": req.prompt,
-        "tier": "Gen-2",
+        "tier": "Sketch",
         "geometry_file_format": "glb",
         "quality": req.quality,
         "mesh_mode": req.mesh_mode,
@@ -34,7 +34,7 @@ def build_payload(req: RodinGen2Request) -> Dict[str, Any]:
     return payload
 
 
-def submit_gen2(req: RodinGen2Request) -> Dict[str, Any]:
+def submit_gen2(req: RodinRequest) -> Dict[str, Any]:
     """Envía una generación Gen‑2 a Hyper3D."""
     body = build_payload(req)
 
@@ -81,7 +81,7 @@ def download_results(task_uuid: str) -> Dict[str, Any]:
     return r.json()
 
 
-def generate_asset_gen2(req: RodinGen2Request) -> Dict[str, Any]:
+def generate_asset_rodin(req: RodinRequest) -> Dict[str, Any]:
     """Pipeline completo: submit → wait → download."""
     # lets do some prints to see the flow with emojis as well
     print("🚀 Submitting Gen‑2 job to Rodin...")
