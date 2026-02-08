@@ -5,38 +5,42 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class DialogueButtons : MonoBehaviour
 {
     [Header("API Config")]
-    public string apiUrl = "URL_DE_LA_API";  // URL de la API
+    public string apiUrl = "URL_DE_LA_API";
     
     [Header("UI References")]
-    public Button[] botones;  // Botones que quieres modificar con las opciones
-    public TMP_Text narrativeText;  // Texto para mostrar la narrativa
-    public TMP_Text faithText;  // Texto para mostrar la "fe"
-    public Slider faithSlider;  // Slider para mostrar el porcentaje de fe
-    public GameObject loadingPanel; // Opcional: para poner cosas de carga alv
+    public Button[] botones;
+    public TMP_Text narrativeText;
+    public TMP_Text faithText;
+    public Slider faithSlider;
+    public GameObject loadingPanel;
+    public GameObject antagPanel;
+    public TMP_Text antagText;
+    public float antagDisplayDuration = 3f;
     
     
-    private int faith = 100;  // Valor inicial de fe
-    private int rivalFaith = 0; // Necesitamos trackear esto también
-    private int turnCounter = 0; // Count turns
+    private int faith = 100;
+    private int rivalFaith = 0;
+    private int turnCounter = 0;
 
     private string lastRivalAction = "";
+    private string lastRivalTaunt = "";
     
-    private GameState gameState;  // Variable para almacenar el estado del juego
-    private FaithCounter faithMonitor;  // Referencia al script que maneja la fe
+    private GameState gameState;
+    private FaithCounter faithMonitor;
 
     void Start()
     {
         faithMonitor = FindFirstObjectByType<FaithCounter>();
-        // Inicializamos el estado del juego
         gameState = new GameState
         {
             player_action =
                 "You open your eyes. You are a divinity. There is a village, with small and big situations to be attended. You are curious.",
-            absurde_factor = 1.0f, // TODO: randomly change the absurde factor
+            absurde_factor = 1.0f,
             current_faith = faith,
             rival_faith = 0,
             history = new List<string>
@@ -49,12 +53,10 @@ public class DialogueButtons : MonoBehaviour
 
 IEnumerator SendGameStateToAPI()
 {
-    // desactivar botones mientras piensa
     SetButtonsInteractable(false);
     if (loadingPanel) loadingPanel.SetActive(true);
     narrativeText.text = "Consulting the divinity...";
 
-    // Convertimos el GameState a JSON
     string jsonData = JsonUtility.ToJson(gameState);
     Debug.Log("POST to: " + apiUrl);
 
@@ -65,7 +67,6 @@ IEnumerator SendGameStateToAPI()
     request.uploadHandler = new UploadHandlerRaw(bodyRaw);
     request.downloadHandler = new DownloadHandlerBuffer();
 
-    // Esperamos la respuesta de la API
     yield return request.SendWebRequest();
     Debug.Log("Response Code: " + request.responseCode);
     if (request.result != UnityWebRequest.Result.Success)
@@ -82,22 +83,22 @@ IEnumerator SendGameStateToAPI()
     if (loadingPanel) loadingPanel.SetActive(false);
 }
 
-//process response from api
 void ProcessResponse(string response)
 {
-    // Deserializamos la respuesta de la API
     ApiResponse apiResponse = JsonUtility.FromJson<ApiResponse>(response);
 
-    // 2. Guardar datos del Rival (para usarlos en el historial del SIGUIENTE turno)
-    // Asumo que antag_action viene en el JSON, si no, usa un default
     lastRivalAction = !string.IsNullOrEmpty(apiResponse.antag_action) ? apiResponse.antag_action : "The rival watches.";
+    lastRivalTaunt = !string.IsNullOrEmpty(apiResponse.antag_taunt) ? apiResponse.antag_taunt : "";
 
-    // 3. Actualizar UI Narrativa
     narrativeText.text = apiResponse.narrative;
 
-    // 4. Actualizar Fe (Impacto del Rival)
     faith += apiResponse.antag_faith_delta;
     UpdateFaithUI();
+
+    if (antagPanel != null && antagText != null)
+    {
+        StartCoroutine(ShowAntagTextCoroutine(lastRivalAction, lastRivalTaunt));
+    }
 
     // Asignamos las opciones a los botones
     for (int i = 0; i < botones.Length; i++)
@@ -109,50 +110,40 @@ void ProcessResponse(string response)
             TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
             Option option = apiResponse.options[i];
 
-            buttonText.text = option.desc; // Mostrar descripción corta
+            buttonText.text = option.desc;
 
-            // Limpiar listeners viejos y poner el nuevo
             button.onClick.RemoveAllListeners();
                 
-            // IMPORTANTE: Aquí cerramos el loop. Pasamos la opción elegida.
             button.onClick.AddListener(() => OnOptionSelected(option));
         }
         else
         {
-            botones[i].gameObject.SetActive(false); // Ocultar botones sobrantes
+            botones[i].gameObject.SetActive(false);
         }
     }
         
-    // Reactivar botones para que el jugador elija
     SetButtonsInteractable(true);
 }
-// ESTE ES EL CORAZÓN DEL LOOP
 void OnOptionSelected(Option selectedOption)
 {
-    // 1. Aplicar efectos inmediatos de la opción
     faith += selectedOption.faith_delta;
     UpdateFaithUI();
         
-    // 2. Construir la entrada del Historial para la IA
-    // Formato: "Turn X: Player Action: '...' -> Outcome: '...' || Rival Intervention: '...'"
     turnCounter++;
         
     string historyEntry = $"Turn {turnCounter}: Player Action: '{selectedOption.desc}' -> Outcome: '{selectedOption.consequence}' || Rival Intervention: '{lastRivalAction}'";
         
-    // 3. Actualizar el GameState para el siguiente envío
     gameState.history.Add(historyEntry);
-    gameState.player_action = selectedOption.desc; // La acción actual
+    gameState.player_action = selectedOption.desc;
     gameState.current_faith = faith;
-    gameState.rival_faith = rivalFaith; // Si tuvieras lógica para esto
+    gameState.rival_faith = rivalFaith;
 
     Debug.Log("Historial actualizado: " + historyEntry);
 
-    // 4. REINICIAR EL LOOP -> Llamar a la API de nuevo
     StartCoroutine(SendGameStateToAPI());
 }
 void UpdateFaithUI()
 {
-    // Clampeamos para que no pase de 0 a 100 si no quieres
     faith = Mathf.Clamp(faith, 0, 100); 
         
     faithText.text = "Faith: " + faith;
@@ -162,6 +153,11 @@ void UpdateFaithUI()
     {
         faithMonitor.UpdateFaith(faith);
     }
+
+    if (faith <= 0)
+    {
+        HandleGameOver();
+    }
 }
 void SetButtonsInteractable(bool state)
 {
@@ -169,6 +165,28 @@ void SetButtonsInteractable(bool state)
     {
         btn.interactable = state;
     }
+}
+
+void HandleGameOver()
+{
+    SceneManager.LoadScene("GameOver");
+}
+
+IEnumerator ShowAntagTextCoroutine(string action, string taunt)
+{
+    antagPanel.SetActive(true);
+    if (!string.IsNullOrEmpty(taunt))
+    {
+        antagText.text = action + "\n" + taunt;
+    }
+    else
+    {
+        antagText.text = action;
+    }
+
+    yield return new WaitForSeconds(antagDisplayDuration);
+
+    antagPanel.SetActive(false);
 }
 [System.Serializable]
 public class GameState
@@ -193,8 +211,8 @@ public class Option
 public class ApiResponse
 {
     public string narrative;
-    public string antag_action; // Añadí esto basado en tu descripción JSON
-    public string antag_taunt;  // Añadí esto
+    public string antag_action;
+    public string antag_taunt;
     public int antag_faith_delta;
     public Option[] options;
 }
