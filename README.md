@@ -161,6 +161,8 @@ MODE = "MISTRAL"  # Use "MOCK" for testing without API calls
 
 **Python Version Issues**: Ensure you're using Python 3.12 or higher (`python --version`)
 
+# REMEMBER, it is possible to easily change the style from the AI by going to libs->prompts.py and changing the strings. But make sure that the output format stays the same. Have fun!
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
