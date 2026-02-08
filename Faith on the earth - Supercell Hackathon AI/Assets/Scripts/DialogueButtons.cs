@@ -36,7 +36,7 @@ public class DialogueButtons : MonoBehaviour
         {
             player_action =
                 "You open your eyes. You are a divinity. There is a village, with small and big situations to be attended. You are curious.",
-            absurde_factor = 1.0f, // TODO: randomly change the absurde factor
+            absurde_factor = ProbabilityScaler.GetWeightedNumber(turnCounter), // the bigger the turn the stupidier
             current_faith = faith,
             rival_faith = 0,
             history = new List<string>
@@ -57,7 +57,7 @@ IEnumerator SendGameStateToAPI()
     // Convertimos el GameState a JSON
     string jsonData = JsonUtility.ToJson(gameState);
     Debug.Log("POST to: " + apiUrl);
-
+    Debug.Log("JsonData: "+ jsonData);
     UnityWebRequest request = new UnityWebRequest(apiUrl, "POST");
     request.SetRequestHeader("Content-Type", "application/json");
 
@@ -170,6 +170,8 @@ void SetButtonsInteractable(bool state)
         btn.interactable = state;
     }
 }
+
+
 [System.Serializable]
 public class GameState
 {
