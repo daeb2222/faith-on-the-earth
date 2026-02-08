@@ -1,5 +1,5 @@
+Please make sure to run the backend before running the game.
 # Faith on the Earth - AI God Game
-
 A dynamic narrative videogame where **you are a god** making decisions that shape the narrative, while a rival AI is sabotaging you. Every choice you make is immediately processed by LLMs systems that generate new story content and unseen consequences. Your rival AI continuously interprets and reacts to your actions, creating an ever-evolving narrative that's never the same twice.
 
 ## Overview
